@@ -234,7 +234,15 @@ export default {
       return this.lowCarb;
     },
     suggest(): string {
-      return "./img/logo.png";
+      if(this.lowCarb){
+        return "./img/logo.png";
+      }
+      else if(this.lowFat){
+        return "./img/logoNotLow.png";
+      }
+      else{
+        return "./img/ketogenic.png"
+      }
     }
   }
 };
