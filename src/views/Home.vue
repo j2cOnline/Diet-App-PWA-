@@ -33,7 +33,7 @@
           v-model="calorieRange"
           :max="2000"
           :min="20"
-          :step="10"
+          :step="15"
         ></v-range-slider>
       </v-flex>
 
@@ -42,13 +42,34 @@
       </v-flex>
     </v-layout>
 
-    <v-card>
-      <div>{{ calorieRange[1] - calorieRange[0] }}</div>
+    <v-card color="rgb(0, 0, 0, 0.0)" flat>
+      <div>{{ calculatedCalories }}</div>
+
+      
+
       <div>{{ test }}</div>
-      <div>{{ suggest }}</div>
-      <v-img :src="suggest"></v-img>
+      
+      <div >{{ suggest }}</div>
+      
+      
+      <v-img contain=true max-height="15rem" :key="suggest" transition="scale-transition" origin="center center" :src="suggest"></v-img>
+      <v-flex shrink style="width: 600px">
+       
+      <v-item-group >
+        <v-scroll-y-reverse-transition group="false" origin="bottom bottom" hide-on-leave="false"> 
+        <v-btn small="true" round="true"  v-for="(item, index) in filterList" :key="index" class="accent--text"  depressed color="primary" >
+        {{item.name}} 
+        </v-btn>
+        </v-scroll-y-reverse-transition>
+      </v-item-group>
+     
+    </v-flex>
     </v-card>
+
+    
+
   </v-container>
+  
 </template>
 
 <script lang="ts">
@@ -73,7 +94,7 @@ const individualItems = [
     calories: 110,
     isKeto: false,
     isLowFat: true,
-    isLowCarb: false
+    isLowCarb: true
   },
   {
     name: "spread",
@@ -82,8 +103,8 @@ const individualItems = [
     protein: 5,
     calories: 110,
     isKeto: false,
-    isLowFat: true,
-    isLowCarb: false
+    isLowFat: false,
+    isLowCarb: true
   },
   {
     name: "lettuce",
@@ -93,7 +114,7 @@ const individualItems = [
     calories: 7,
     isKeto: false,
     isLowFat: true,
-    isLowCarb: false
+    isLowCarb: true
   },
   {
     name: "tomato",
@@ -111,9 +132,9 @@ const individualItems = [
     fat: 10,
     protein: 5,
     calories: 110,
-    isKeto: false,
-    isLowFat: true,
-    isLowCarb: false
+    isKeto: true,
+    isLowFat: false,
+    isLowCarb: true
   },
   {
     name: "meat patty",
@@ -121,9 +142,9 @@ const individualItems = [
     fat: 10,
     protein: 5,
     calories: 110,
-    isKeto: false,
-    isLowFat: true,
-    isLowCarb: false
+    isKeto: true,
+    isLowFat: false,
+    isLowCarb: true
   },
   {
     name: "chilies",
@@ -133,7 +154,7 @@ const individualItems = [
     calories: 110,
     isKeto: false,
     isLowFat: true,
-    isLowCarb: false
+    isLowCarb: true
   },
   {
     name: "fries",
@@ -151,9 +172,9 @@ const individualItems = [
     fat: 10,
     protein: 5,
     calories: 110,
-    isKeto: false,
+    isKeto: true,
     isLowFat: true,
-    isLowCarb: false
+    isLowCarb: true
   },
   {
     name: "ketchup",
@@ -171,9 +192,9 @@ const individualItems = [
     fat: 10,
     protein: 5,
     calories: 110,
-    isKeto: false,
+    isKeto: true,
     isLowFat: true,
-    isLowCarb: false
+    isLowCarb: true
   },
   {
     name: "jalapenos",
@@ -183,7 +204,7 @@ const individualItems = [
     calories: 110,
     isKeto: false,
     isLowFat: true,
-    isLowCarb: false
+    isLowCarb: true
   },
   {
     name: "pup patty",
@@ -191,9 +212,9 @@ const individualItems = [
     fat: 10,
     protein: 5,
     calories: 110,
-    isKeto: false,
-    isLowFat: true,
-    isLowCarb: false
+    isKeto: true,
+    isLowFat: false,
+    isLowCarb: true
   },
   {
     name: "whole grilled onion",
@@ -203,7 +224,7 @@ const individualItems = [
     calories: 110,
     isKeto: false,
     isLowFat: true,
-    isLowCarb: false
+    isLowCarb: true
   },
   {
     name: "grilled onions",
@@ -213,9 +234,21 @@ const individualItems = [
     calories: 110,
     isKeto: false,
     isLowFat: true,
-    isLowCarb: false
+    isLowCarb: true
   }
 ];
+
+
+
+// function LowCarb(item: { isLowCarb: boolean; }){
+//   return item.isLowCarb;
+// }
+// function LowFat(item: { isLowFat: boolean; }){
+//   return item.isLowFat;
+// }
+// function Keto(item: { isKeto: boolean; }){
+//   return item.isKeto;
+// }
 
 export default {
   data: function() {
@@ -226,24 +259,41 @@ export default {
       lowFat: false,
       ketogenic: false,
       calorieRange: [500, 1500],
-      individualItems: individualItems
+      individualItems: individualItems,
+      currentItems: []
     };
   },
   computed: {
     test(): boolean {
       return this.lowCarb;
     },
+    calculatedCalories(): number {
+      return this.calorieRange[1] - this.calorieRange[0];
+    },
     suggest(): string {
-      if(this.lowCarb){
+      if (this.lowCarb) {
         return "./img/logo.png";
-      }
-      else if(this.lowFat){
+      } else if (this.lowFat) {
         return "./img/logoNotLow.png";
+      } else {
+        return "./img/ketogenic.png";
       }
-      else{
-        return "./img/ketogenic.png"
+    },
+    filterList(): any {
+     let currentItems = [...individualItems];
+     if(this.lowCarb)
+      {
+        return currentItems.filter(function(item){return item.isLowCarb});
+      } else if (this.lowFat) {
+        return currentItems.filter(function(item){return item.isLowFat});
+      } else {
+       return currentItems.filter(function(item){return item.isKeto});
       }
+      return currentItems;
     }
+  
   }
+
 };
 </script>
+
